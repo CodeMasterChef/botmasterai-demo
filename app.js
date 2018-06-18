@@ -1,9 +1,11 @@
 const Botmaster = require('botmaster');
-
-const botmaster = new Botmaster();
-
 const MessengerBot = require('botmaster-messenger');
 
+const setting = {
+    port: process.env.PORT || 3000
+}
+
+const botmaster = new Botmaster(setting);
 
 const messengerSettings = {
     credentials: {
