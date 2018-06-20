@@ -9,28 +9,71 @@ const botmaster = new Botmaster(setting);
 
 const messengerSettings = {
     credentials: {
-      verifyToken: 'morehardmoremoney',
-      pageToken: 'EAAPE9g5H2FABAALaTDtoMaxhrZBX6COediOLoWDIeZCb3q5eu4HjMwuLzZC9SeAChUshEoO2ZB8z5mUtRZCzxX80IJ7pZAbXkyNjL2b73rgLZA6iZCIoqg93EDkCRR59cjQDSsj8d07TUtk6CkZAkfsr8HRkGmaBxiXDwoWRwR9vXgAZDZD',
-      fbAppSecret: '6bb28e299667852d628a91ef66a17518',
+        verifyToken: process.env.FB_VERIFY_TOKEN,
+        pageToken: process.env.FB_PAGE_TOKEN,
+        fbAppSecret: process.env.FB_APP_SECRET,
     },
-    webhookEndpoint: 'webhook1234', // botmaster will mount this webhook on https://Your_Domain_Name/messenger/webhook1234
-  };
+    webhookEndpoint: process.env.FB_WEBHOOK_END_POINT,
+};
 
-  const messengerBot = new MessengerBot(messengerSettings);
 
-  botmaster.addBot(messengerBot);
+const messengerBot = new MessengerBot(messengerSettings);
 
-  botmaster.use({
+botmaster.addBot(messengerBot);
+
+
+myIncomingMiddlewareController = async (bot, update) => {
+
+    const userInfo = await bot.getUserInfo(update.sender.id);
+
+    const rawMessage = {
+        recipient: {
+            id: update.sender.id,
+        },
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    elements: [
+                        {
+
+                            title: "Welcome!",
+                            image_url: "https://www.google.com.vn/logos/doodles/2018/world-cup-2018-day-7-5109361306238976-5722646637445120-ssw.png",
+                            subtitle: "We have the right hat for everyone.",
+                            
+                            buttons: [
+                                {
+                                    title: "View",
+                                    type: "web_url",
+                                    url: "https://www.medium.com/",
+                                },
+                                {
+                                    title: "Close",
+                                    type: "web_url",
+                                    url: "https://www.medium.com/",
+                                }
+                            ]
+                        },
+                        
+                    ]
+                }
+            }
+        }
+    };
+
+    try {
+        await bot.sendRawMessage(rawMessage);
+    } catch (ex) {
+        console.log(ex);
+    }
+
+
+
+}
+
+botmaster.use({
     type: 'incoming',
     name: 'my-incoming-middleware',
-    controller: (bot, update) => {
-      return bot.reply(update, 'Hello World!');
-    }
-  });
-
-const express = require('express')
-const app = express()
-
-app.get('/', (req, res) => res.send('Hello World!'))
-
-//   app.listen(3000, () => console.log('Example app listening on port 3000!'))
+    controller: myIncomingMiddlewareController
+});
